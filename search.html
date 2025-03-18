@@ -274,7 +274,6 @@
                   <option value="date">Date (newest first)</option>
                   <option value="popularity">Popularity (highest first)</option>
                 </select>
-
               </div>
             </div>
           </div>
@@ -398,6 +397,11 @@
       const sortSelect = document.getElementById("sortSelect");
       const mobileSortSelect = document.getElementById("mobileSortSelect");
 
+      // Handle URL parameters
+      function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+      }
       var dateFilter = "allTime";
       // Sync desktop and mobile filter values
       function syncFilters(fromMobile = false) {
@@ -427,9 +431,18 @@
       }
 
       // Event Listeners
-      document.addEventListener("DOMContentLoaded", fetchSearchData);
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchSearchData();
+
+        // Check for search parameter
+        const searchQuery = getQueryParam("s");
+        if (searchQuery) {
+          searchInput.value = searchQuery;
+          handleSearch();
+        }
+      });
       searchForm.addEventListener("submit", handleSearch);
-      sortSelect.addEventListener("change", ()=>{
+      sortSelect.addEventListener("change", () => {
         mobileSortSelect.value = sortSelect.value;
         handleSort();
       });
@@ -477,16 +490,27 @@
       // Handle search form submission
       function handleSearch(e) {
         if (e) e.preventDefault();
-        const query = searchInput.value.trim().toLowerCase();
+        const query = searchInput.value.trim();
 
-        if (query === "") {
+        // Update URL without reloading the page
+        const url = new URL(window.location);
+        if (query) {
+          url.searchParams.set("s", query);
+        } else {
+          url.searchParams.delete("s");
+        }
+        window.history.pushState({}, "", url);
+
+        // Rest of the existing handleSearch code...
+        const queryLower = query.toLowerCase();
+        if (queryLower === "") {
           filteredData = [...searchData];
         } else {
           filteredData = searchData.filter((item) => {
             const titleMatch =
-              item.title && item.title.toLowerCase().includes(query);
+              item.title && item.title.toLowerCase().includes(queryLower);
             const textMatch =
-              item.text && item.text.toLowerCase().includes(query);
+              item.text && item.text.toLowerCase().includes(queryLower);
             return titleMatch || textMatch;
           });
         }
