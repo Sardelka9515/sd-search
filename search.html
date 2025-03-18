@@ -9,59 +9,198 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
     />
+    <!-- Font Awesome for icons -->
+    <link 
+      rel="stylesheet" 
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
+      :root {
+        --primary-color: #0d6efd;
+        --secondary-color: #198754;
+        --light-gray: #f8f9fa;
+        --dark-gray: #6c757d;
+        --border-radius: 8px;
+        --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      
+      body {
+        background-color: #f9f9f9;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      }
+      
       .search-result {
         padding: 20px;
-        border-bottom: 1px solid #eee;
+        border-radius: var(--border-radius);
+        background-color: white;
+        box-shadow: var(--box-shadow);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
       }
+      
+      .search-result:hover {
+        transform: translateY(-2px);
+      }
+      
       .result-url {
-        color: #0d6efd;
+        color: var(--primary-color);
         text-decoration: none;
+        font-weight: 600;
       }
+      
+      .result-url:hover {
+        text-decoration: underline;
+      }
+      
       .result-path {
-        color: #198754;
+        color: var(--secondary-color);
         font-size: 14px;
+        margin-bottom: 10px;
       }
+      
       .result-meta {
-        color: #6c757d;
-        font-size: 12px;
+        color: var(--dark-gray);
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
       }
+      
+      .result-meta i {
+        margin-right: 4px;
+      }
+      
       .result-stats {
-        font-size: 12px;
-        color: #6c757d;
+        font-size: 14px;
+        color: var(--dark-gray);
+        margin-bottom: 20px;
       }
+      
       .search-box {
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
+        margin-bottom: 30px;
       }
+      
+      .search-form-container {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        padding: 15px 0;
+        /*
+        background-color: #f9f9f9;
+        */
+      }
+      
+      #searchInput {
+        border-radius: var(--border-radius);
+        padding: 12px;
+      }
+      
+      .btn-primary {
+        border-radius: var(--border-radius);
+        padding: 0 20px;
+      }
+      
       #loading {
         text-align: center;
         margin: 50px 0;
       }
+      
       #error {
         color: #dc3545;
         text-align: center;
         margin: 50px 0;
         display: none;
+        padding: 20px;
+        background-color: #f8d7da;
+        border-radius: var(--border-radius);
+      }
+      
+      .filter-card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 20px;
+      }
+      
+      .filter-card .card-header {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        padding: 15px 20px;
+      }
+      
+      .filter-card .card-body {
+        padding: 20px;
+      }
+      
+      .pagination .page-link {
+        
+        border-radius: 4px;
+        margin: 0 3px;
+      }
+      
+      .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+      
+      /* Mobile Optimizations */
+      @media (max-width: 768px) {
+        .container {
+          padding: 0 15px;
+        }
+        
+        .search-form-container {
+          padding: 10px 0;
+        }
+        
+        .search-box {
+          margin-bottom: 15px;
+        }
+        
+        #searchInput {
+          padding: 10px;
+        }
+        
+        .filter-toggle-btn {
+          width: 100%;
+          margin-bottom: 15px;
+        }
+        
+        .mobile-filters {
+          margin-bottom: 20px;
+        }
+        
+        .pagination .page-link {
+          padding: 0.375rem 0.5rem;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container mt-4">
-      <!-- Search box -->
-      <div class="row mb-4">
-        <div class="col-md-8 mx-3">
-          <div class="card search-box">
-            <div class="card-body">
-              <form class="d-flex" id="searchForm">
-                <input
-                  class="form-control me-2"
-                  type="search"
-                  placeholder="Search"
-                  aria-label="Search"
-                  id="searchInput"
-                />
-                <button class="btn btn-primary" type="submit">Search</button>
-              </form>
+      <!-- Search box - sticky on mobile -->
+      <div class="search-form-container">
+        <div class="row">
+          <div class="col-12">
+            <div class="card search-box">
+              <div class="card-body">
+                <form class="d-flex" id="searchForm">
+                  <input
+                    class="form-control me-2"
+                    type="search"
+                    placeholder="Search"
+                    aria-label="Search"
+                    id="searchInput"
+                  />
+                  <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search d-inline-block d-md-none"></i>
+                    <span class="d-none d-md-inline-block">Search</span>
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
@@ -69,8 +208,70 @@
 
       <!-- Results count -->
       <div class="row">
-        <div class="col-md-8 mx-auto">
-          <p class="result-stats mb-3" id="resultStats"></p>
+        <div class="col-12 col-md-8">
+          <p class="result-stats" id="resultStats"></p>
+        </div>
+        
+        <!-- Mobile filters toggle button -->
+        <div class="col-12 d-md-none mb-3">
+          <button class="btn btn-outline-secondary filter-toggle-btn" type="button" data-bs-toggle="collapse" data-bs-target="#mobileFilters" aria-expanded="false" aria-controls="mobileFilters">
+            <i class="fas fa-filter"></i> Show Filters
+          </button>
+          
+          <!-- Mobile filters (collapsible) -->
+          <div class="collapse mobile-filters" id="mobileFilters">
+            <div class="card filter-card">
+              <div class="card-header">Filter Results</div>
+              <div class="card-body">
+                <h6>Date</h6>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="dateFilter"
+                    id="mobileAllTime"
+                    checked
+                  />
+                  <label class="form-check-label" for="mobileAllTime"> All time </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="dateFilter"
+                    id="mobilePastYear"
+                  />
+                  <label class="form-check-label" for="mobilePastYear">
+                    Past year
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="dateFilter"
+                    id="mobilePastMonth"
+                  />
+                  <label class="form-check-label" for="mobilePastMonth">
+                    Past month
+                  </label>
+                </div>
+
+                <hr />
+
+                <h6>Sort By</h6>
+                <select class="form-select" id="mobileSortSelect">
+                  <option value="relevance" selected>Relevance</option>
+                  <option value="date">Date (newest first)</option>
+                  <option value="popularity">Popularity (highest first)</option>
+                </select>
+                
+                <div class="text-center mt-3">
+                  <button class="btn btn-primary btn-sm" id="applyMobileFilters">Apply Filters</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -86,20 +287,20 @@
       <div id="error">
         <h4>Error loading search results</h4>
         <p>
-          Unable to load data from ./search_result.json. Please check that the
-          file exists and is accessible.
+          Unable to load data. Please check your connection and try again.
         </p>
       </div>
 
       <!-- Search results -->
       <div class="row" id="resultsContainer" style="display: none">
-        <div class="col-md-8 mx-auto" id="searchResults">
+        <!-- Main results column -->
+        <div class="col-md-8" id="searchResults">
           <!-- Results will be populated here -->
         </div>
 
-        <!-- Sidebar with filters -->
-        <div class="col-md-3 mx-auto d-none d-md-block">
-          <div class="card">
+        <!-- Sidebar with filters (desktop) -->
+        <div class="col-md-4 d-none d-md-block">
+          <div class="card filter-card">
             <div class="card-header">Filter Results</div>
             <div class="card-body">
               <h6>Date</h6>
@@ -150,14 +351,14 @@
       </div>
 
       <!-- Pagination -->
-      <div class="row mt-4">
-        <div class="col-md-8 mx-auto">
+      <div class="row mt-4 mb-5">
+        <div class="col-12">
           <nav
             aria-label="Search results pages"
             id="paginationContainer"
             style="display: none"
           >
-            <ul class="pagination justify-content-center" id="pagination">
+            <ul class="pagination justify-content-center flex-wrap" id="pagination">
               <!-- Pagination will be populated here -->
             </ul>
           </nav>
@@ -183,52 +384,129 @@
       const loading = document.getElementById("loading");
       const error = document.getElementById("error");
       const resultsContainer = document.getElementById("resultsContainer");
-      const paginationContainer = document.getElementById(
-        "paginationContainer"
-      );
+      const paginationContainer = document.getElementById("paginationContainer");
       const pagination = document.getElementById("pagination");
       const sortSelect = document.getElementById("sortSelect");
+      const mobileSortSelect = document.getElementById("mobileSortSelect");
+      const applyMobileFilters = document.getElementById("applyMobileFilters");
+      
+      // Sync desktop and mobile filter values
+      function syncFilters(fromMobile = false) {
+        alert(fromMobile);
+        if (fromMobile) {
+          // Sync from mobile to desktop
+          document.getElementById("allTime").checked = document.getElementById("mobileAllTime").checked;
+          document.getElementById("pastYear").checked = document.getElementById("mobilePastYear").checked;
+          document.getElementById("pastMonth").checked = document.getElementById("mobilePastMonth").checked;
+          sortSelect.value = mobileSortSelect.value;
+        } else {
+          // Sync from desktop to mobile
+          document.getElementById("mobileAllTime").checked = document.getElementById("allTime").checked;
+          document.getElementById("mobilePastYear").checked = document.getElementById("pastYear").checked;
+          document.getElementById("mobilePastMonth").checked = document.getElementById("pastMonth").checked;
+          mobileSortSelect.value = sortSelect.value;
+        }
+      }
 
       // Event Listeners
       document.addEventListener("DOMContentLoaded", fetchSearchData);
       searchForm.addEventListener("submit", handleSearch);
       sortSelect.addEventListener("change", handleSort);
+      mobileSortSelect.addEventListener("change", () => {
+        syncFilters(true);
+      });
+      
+      // Apply mobile filters button
+      applyMobileFilters.addEventListener("click", () => {
+        syncFilters(true);
+        handleSort();
+        // Close the collapse
+        const bsCollapse = bootstrap.Collapse.getInstance(document.getElementById('mobileFilters'));
+        if (bsCollapse) bsCollapse.hide();
+      });
+      
+      // Date filter change handlers
+      document.querySelectorAll('input[name="dateFilter"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          const id = radio.id;
+          if (id.startsWith('mobile')) {
+            syncFilters(true);
+          } else {
+            syncFilters(false);
+          }
+          applyDateFilter();
+        });
+      });
 
       // Fetch search data from JSON file
       function fetchSearchData() {
-        searchData = SEARCH_DATASET;
-        loading.style.display = "none";
+        try {
+          searchData = SEARCH_DATASET || [];
+          loading.style.display = "none";
 
-        if (searchData.length > 0) {
-          // Default sorting by popularity
-          sortData("popularity");
-          displayResults();
-        } else {
-          resultStats.textContent = "No results found";
-          resultsContainer.style.display = "block";
+          if (searchData.length > 0) {
+            // Default sorting by popularity
+            filteredData = [...searchData];
+            sortData("popularity");
+            displayResults();
+          } else {
+            resultStats.textContent = "No results found";
+            resultsContainer.style.display = "flex";
+            error.style.display = "none";
+          }
+        } catch (err) {
+          loading.style.display = "none";
+          error.style.display = "block";
+          console.error("Error loading search data:", err);
         }
       }
 
       // Handle search form submission
       function handleSearch(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         const query = searchInput.value.trim().toLowerCase();
 
         if (query === "") {
           filteredData = [...searchData];
         } else {
           filteredData = searchData.filter((item) => {
-            const titleMatch =
-              item.title && item.title.toLowerCase().includes(query);
-            const textMatch =
-              item.text && item.text.toLowerCase().includes(query);
+            const titleMatch = item.title && item.title.toLowerCase().includes(query);
+            const textMatch = item.text && item.text.toLowerCase().includes(query);
             return titleMatch || textMatch;
           });
         }
 
         currentPage = 1;
+        applyDateFilter();
         sortData(sortSelect.value);
         displayResults();
+      }
+      
+      // Apply date filter
+      function applyDateFilter() {
+        let dateFilter = "allTime";
+        if (document.getElementById("pastYear").checked) dateFilter = "pastYear";
+        if (document.getElementById("pastMonth").checked) dateFilter = "pastMonth";
+        
+        if (dateFilter === "allTime") {
+          // No additional filtering needed
+          return;
+        }
+        
+        const now = new Date();
+        const filterDate = new Date();
+        
+        if (dateFilter === "pastYear") {
+          filterDate.setFullYear(now.getFullYear() - 1);
+        } else if (dateFilter === "pastMonth") {
+          filterDate.setMonth(now.getMonth() - 1);
+        }
+        
+        filteredData = filteredData.filter(item => {
+          if (!item.created_at) return false;
+          const itemDate = new Date(item.created_at);
+          return itemDate >= filterDate;
+        });
       }
 
       // Sort the data based on selected criteria
@@ -238,20 +516,20 @@
       }
 
       function sortData(criteria) {
-        filteredData = filteredData.length > 0 ? filteredData : [...searchData];
-
         switch (criteria) {
           case "date":
-            filteredData.sort(
-              (a, b) => new Date(b.created_at) - new Date(a.created_at)
-            );
+            filteredData.sort((a, b) => {
+              const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+              const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+              return dateB - dateA;
+            });
             break;
           case "popularity":
-            filteredData.sort((a, b) => b.popularity - a.popularity);
+            filteredData.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
             break;
           case "relevance":
           default:
-            // For relevance, we'll keep the default order from the JSON
+            // For relevance, we'll keep the default order
             break;
         }
       }
@@ -292,21 +570,19 @@
                 })
               : "Unknown date";
 
-            // Create links from text if they exist in the result
-            let quickLinks = "";
-            
-
             resultElement.innerHTML = `
-                        <h3><a href="${result.url || "#"}" class="result-url">${
-              result.title || "Untitled"
-            }</a></h3>
-                        <p class="result-path">${result.url_path || ""}</p>
-                        <p>${result.text || "No description available"}</p>
-                        <p class="result-meta">Created: ${formattedDate} • Popularity: ${
-              result.popularity?.toLocaleString() || "Unknown"
-            }</p>
-                        ${quickLinks}
-                    `;
+              <h4><a href="${result.url || "#"}" class="result-url">${
+                result.title || "Untitled"
+              }</a></h4>
+              <p class="result-path"><i class="fas fa-link"></i> ${result.url_path || ""}</p>
+              <p>${result.text || "No description available"}</p>
+              <div class="result-meta">
+                <span><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
+                <span><i class="fas fa-chart-line"></i> Popularity: ${
+                  result.popularity?.toLocaleString() || "Unknown"
+                }</span>
+              </div>
+            `;
 
             searchResults.appendChild(resultElement);
           });
@@ -332,18 +608,39 @@
         prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
         prevLi.innerHTML = `<a class="page-link" href="#" ${
           currentPage === 1 ? 'tabindex="-1" aria-disabled="true"' : ""
-        }>Previous</a>`;
+        }><i class="fas fa-chevron-left"></i></a>`;
         if (currentPage > 1) {
           prevLi.querySelector("a").addEventListener("click", (e) => {
             e.preventDefault();
             currentPage--;
             displayResults();
+            // Scroll to top of results on mobile
+            if (window.innerWidth < 768) {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
           });
         }
         pagination.appendChild(prevLi);
 
-        // Page numbers
-        for (let i = 1; i <= totalPages; i++) {
+        // Page numbers (limit visible pages on mobile)
+        const maxVisiblePages = window.innerWidth < 768 ? 3 : 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Adjust start page if end page is maxed out
+        if (endPage === totalPages) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // Add ellipsis at start if needed
+        if (startPage > 1) {
+          const ellipsisStart = document.createElement("li");
+          ellipsisStart.className = "page-item disabled";
+          ellipsisStart.innerHTML = '<span class="page-link">...</span>';
+          pagination.appendChild(ellipsisStart);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
           const pageLi = document.createElement("li");
           pageLi.className = `page-item ${i === currentPage ? "active" : ""}`;
           pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
@@ -351,8 +648,20 @@
             e.preventDefault();
             currentPage = i;
             displayResults();
+            // Scroll to top of results on mobile
+            if (window.innerWidth < 768) {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
           });
           pagination.appendChild(pageLi);
+        }
+        
+        // Add ellipsis at end if needed
+        if (endPage < totalPages) {
+          const ellipsisEnd = document.createElement("li");
+          ellipsisEnd.className = "page-item disabled";
+          ellipsisEnd.innerHTML = '<span class="page-link">...</span>';
+          pagination.appendChild(ellipsisEnd);
         }
 
         // Next button
@@ -362,16 +671,27 @@
         }`;
         nextLi.innerHTML = `<a class="page-link" href="#" ${
           currentPage === totalPages ? 'tabindex="-1" aria-disabled="true"' : ""
-        }>Next</a>`;
+        }><i class="fas fa-chevron-right"></i></a>`;
         if (currentPage < totalPages) {
           nextLi.querySelector("a").addEventListener("click", (e) => {
             e.preventDefault();
             currentPage++;
             displayResults();
+            // Scroll to top of results on mobile
+            if (window.innerWidth < 768) {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
           });
         }
         pagination.appendChild(nextLi);
       }
+
+      // Window resize handler for responsive adjustments
+      window.addEventListener('resize', function() {
+        if (filteredData.length > resultsPerPage) {
+          updatePagination();
+        }
+      });
     </script>
   </body>
 </html>
