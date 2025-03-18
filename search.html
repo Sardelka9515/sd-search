@@ -312,7 +312,7 @@
 
                 <h6>Sort By</h6>
                 <select class="form-select" id="mobileSortSelect">
-                  <option value="relevance" selected>Relevance</option>
+                  <option value="title" selected>Title (A-Z)</option>
                   <option value="date">Date (newest first)</option>
                   <option value="popularity">Popularity (highest first)</option>
                 </select>
@@ -386,7 +386,7 @@
 
               <h6>Sort By</h6>
               <select class="form-select" id="sortSelect">
-                <option value="relevance" selected>Relevance</option>
+                <option value="title" selected>Title (A-Z)</option>
                 <option value="date">Date (newest first)</option>
                 <option value="popularity">Popularity (highest first)</option>
               </select>
@@ -680,7 +680,6 @@
         sortData(sortSelect.value);
         displayResults();
       }
-
       function sortData(criteria) {
         switch (criteria) {
           case "date":
@@ -695,13 +694,15 @@
               (a, b) => (b.popularity || 0) - (a.popularity || 0)
             );
             break;
-          case "relevance":
-          default:
-            // For relevance, we'll keep the default order
+          case "title":
+            filteredData.sort((a, b) => {
+              const titleA = (a.title || "").toLowerCase();
+              const titleB = (b.title || "").toLowerCase();
+              return titleA.localeCompare(titleB);
+            });
             break;
         }
       }
-
       // Display search results
       function displayResults() {
         const startIndex = (currentPage - 1) * resultsPerPage;
