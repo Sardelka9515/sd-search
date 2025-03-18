@@ -178,6 +178,44 @@
           padding: 0.375rem 0.5rem;
         }
       }
+      #searchInput {
+        border-radius: var(--border-radius);
+        padding: 12px;
+      }
+
+      /* Add these new styles */
+      .autocomplete-container {
+        position: relative;
+        flex-grow: 1;
+      }
+
+      .autocomplete-items {
+        position: absolute;
+        border: 1px solid #ddd;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        z-index: 99;
+        top: 100%;
+        left: 0;
+        right: 0;
+        box-shadow: var(--box-shadow);
+        background-color: white;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .autocomplete-item {
+        padding: 10px;
+        cursor: pointer;
+      }
+
+      .autocomplete-item:hover {
+        background-color: var(--light-gray);
+      }
+
+      .autocomplete-active {
+        background-color: var(--primary-color) !important;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -189,13 +227,16 @@
             <div class="card search-box">
               <div class="card-body">
                 <form class="d-flex" id="searchForm">
-                  <input
-                    class="form-control me-2"
-                    type="search"
-                    placeholder="Search"
-                    aria-label="Search"
-                    id="searchInput"
-                  />
+                  <div class="autocomplete-container">
+                    <input
+                      class="form-control me-2"
+                      type="search"
+                      placeholder="Search"
+                      aria-label="Search"
+                      id="searchInput"
+                      autocomplete="off"
+                    />
+                  </div>
                   <button class="btn btn-primary" type="submit">
                     <i class="fas fa-search d-inline-block d-md-none"></i>
                     <span class="d-none d-md-inline-block">Search</span>
@@ -432,8 +473,101 @@
       }
 
       // Event Listeners
+      // Add autocomplete functionality
+      function setupAutocomplete() {
+        const maxSuggestions = 5;
+        let currentFocus = -1;
+        const searchInput = document.getElementById("searchInput");
+
+        function removeAutocompleteItems() {
+          const items = document.getElementsByClassName("autocomplete-items");
+          for (let i = 0; i < items.length; i++) {
+            items[i].parentNode.removeChild(items[i]);
+          }
+        }
+
+        function addActive(x) {
+          if (!x) return false;
+          removeActive(x);
+          if (currentFocus >= x.length) currentFocus = 0;
+          if (currentFocus < 0) currentFocus = x.length - 1;
+          x[currentFocus].classList.add("autocomplete-active");
+        }
+
+        function removeActive(x) {
+          for (let i = 0; i < x.length; i++) {
+            x[i].classList.remove("autocomplete-active");
+          }
+        }
+
+        searchInput.addEventListener("input", function (e) {
+          const val = this.value;
+          removeAutocompleteItems();
+
+          if (!val) return false;
+
+          const suggestions = searchData
+            .filter(
+              (item) =>
+                item.title &&
+                item.title.toLowerCase().includes(val.toLowerCase())
+            )
+            .slice(0, maxSuggestions)
+            .map((item) => item.title);
+
+          if (suggestions.length > 0) {
+            const container = document.createElement("div");
+            container.setAttribute("class", "autocomplete-items");
+            this.parentNode.appendChild(container);
+
+            suggestions.forEach((suggestion) => {
+              const div = document.createElement("div");
+              div.setAttribute("class", "autocomplete-item");
+              div.innerHTML = suggestion.replace(
+                new RegExp(val, "gi"),
+                (match) => `<strong>${match}</strong>`
+              );
+
+              div.addEventListener("click", function (e) {
+                searchInput.value = suggestion;
+                removeAutocompleteItems();
+                handleSearch();
+              });
+
+              container.appendChild(div);
+            });
+          }
+        });
+
+        searchInput.addEventListener("keydown", function (e) {
+          let x = document.getElementsByClassName("autocomplete-item");
+          if (x.length === 0) return;
+
+          if (e.keyCode === 40) {
+            // Arrow DOWN
+            currentFocus++;
+            addActive(x);
+          } else if (e.keyCode === 38) {
+            // Arrow UP
+            currentFocus--;
+            addActive(x);
+          } else if (e.keyCode === 13) {
+            // ENTER
+            e.preventDefault();
+            if (currentFocus > -1) {
+              if (x) x[currentFocus].click();
+            }
+          }
+        });
+
+        document.addEventListener("click", function (e) {
+          removeAutocompleteItems();
+        });
+      }
+
       document.addEventListener("DOMContentLoaded", () => {
         fetchSearchData();
+        setupAutocomplete();
 
         // Check for search parameter
         const searchQuery = getQueryParam("s");
